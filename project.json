@@ -1,0 +1,22 @@
+{
+  "overview": "Cashfessions is an anonymous investment confession platform for investor communities. Users generate a personal shareable link to collect anonymous confessions about investment mistakes. Confessions display as shareable cards with tags and timestamps on a public feed, while owners manage their submissions through a private dashboard.",
+  "features": [
+    "Anonymous submission form with 'What's your biggest investment mistake?' prompt",
+    "Tag system: crypto, stocks, real estate, forex",
+    "Public confession feed with tag filtering",
+    "Shareable card design optimized for social media",
+    "Relative timestamps (e.g., '2 days ago')",
+    "Owner dashboard with delete and flag/hide moderation controls",
+    "Login-protected owner management via Internet Identity",
+    "No sender identity stored or shown — fully anonymous"
+  ],
+  "category": "productivity",
+  "tags": [
+    "anonymous",
+    "confessions",
+    "investing",
+    "community",
+    "moderation"
+  ],
+  "last_updated": "2026-04-08T21:42:23.129Z"
+}

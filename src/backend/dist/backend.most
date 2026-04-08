@@ -1,0 +1,22 @@
+// Version: 1.0.0
+type ConfessionId__569046378 = Nat;
+type Confession__780683053 =
+  {
+    id : ConfessionId__569046378;
+    isHidden : Bool;
+    tags : [Text];
+    text : Text;
+    timestamp : Int
+  };
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+actor {
+  stable confessions :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?Confession__780683053]];
+      var elementIndex : Nat__490723111
+    };
+  stable var nextConfessionId : Nat;
+  stable var owner : ?Principal
+};

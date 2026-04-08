@@ -1,0 +1,18 @@
+type ConfessionId = nat;
+type Confession = 
+ record {
+   id: ConfessionId;
+   isHidden: bool;
+   tags: vec text;
+   "text": text;
+   timestamp: int;
+ };
+service : {
+  claimOwnership: () -> (bool);
+  deleteConfession: (id: nat) -> (bool);
+  getConfessionsByTag: (tag: text) -> (vec Confession) query;
+  getOwnerConfessions: () -> (vec Confession) query;
+  getPublicConfessions: () -> (vec Confession) query;
+  submitConfession: ("text": text, tags: vec text) -> (nat);
+  toggleHideConfession: (id: nat) -> (bool);
+}
