@@ -167,7 +167,7 @@ export default function Dashboard() {
     queryKey: ["owner-confessions"],
     queryFn: async () => {
       if (!actor) return [];
-      const raw = await actor.getOwnerConfessions();
+      const raw = await actor.getAllConfessions();
       return raw as Confession[];
     },
     enabled: isAuthenticated && !!actor && !actorFetching,

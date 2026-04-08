@@ -12,6 +12,7 @@ import { Suspense, lazy } from "react";
 const HomePage = lazy(() => import("@/pages/Home"));
 const FeedPage = lazy(() => import("@/pages/Feed"));
 const DashboardPage = lazy(() => import("@/pages/Dashboard"));
+const AnalyticsPage = lazy(() => import("@/pages/Analytics"));
 
 function PageLoader() {
   return (
@@ -51,7 +52,18 @@ const dashboardRoute = createRoute({
   component: () => <DashboardPage />,
 });
 
-const routeTree = rootRoute.addChildren([homeRoute, feedRoute, dashboardRoute]);
+const analyticsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/analytics",
+  component: () => <AnalyticsPage />,
+});
+
+const routeTree = rootRoute.addChildren([
+  homeRoute,
+  feedRoute,
+  dashboardRoute,
+  analyticsRoute,
+]);
 
 const router = createRouter({ routeTree });
 

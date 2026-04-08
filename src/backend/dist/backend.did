@@ -1,18 +1,53 @@
+type TagAnalytic = 
+ record {
+   count: nat;
+   tag: text;
+ };
+type ReactionCount = 
+ record {
+   crazy: nat;
+   funny: nat;
+   relatable: nat;
+   sad: nat;
+ };
+type Reaction = 
+ variant {
+   Crazy;
+   Funny;
+   Relatable;
+   Sad;
+ };
 type ConfessionId = nat;
 type Confession = 
  record {
+   commentCount: nat;
    id: ConfessionId;
    isHidden: bool;
+   reactions: ReactionCount;
    tags: vec text;
    "text": text;
    timestamp: int;
  };
+type CommentId = nat;
+type Comment = 
+ record {
+   confessionId: ConfessionId;
+   id: CommentId;
+   "text": text;
+   timestamp: int;
+ };
 service : {
+  addComment: (confessionId: nat, "text": text) -> (Comment);
+  addReaction: (confessionId: nat, reaction: Reaction) -> (ReactionCount);
   claimOwnership: () -> (bool);
   deleteConfession: (id: nat) -> (bool);
+  getAllConfessions: () -> (vec Confession) query;
+  getComments: (confessionId: nat) -> (vec Comment) query;
+  getConfessionOfDay: () -> (opt Confession) query;
   getConfessionsByTag: (tag: text) -> (vec Confession) query;
-  getOwnerConfessions: () -> (vec Confession) query;
   getPublicConfessions: () -> (vec Confession) query;
+  getTagAnalytics: () -> (vec TagAnalytic) query;
+  getTrendingConfessions: () -> (vec Confession) query;
   submitConfession: ("text": text, tags: vec text) -> (nat);
   toggleHideConfession: (id: nat) -> (bool);
 }

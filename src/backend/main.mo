@@ -1,9 +1,12 @@
 import List "mo:core/List";
 import Types "types/confessions";
 import ConfessionsMixin "mixins/confessions-api";
+import Migration "migration";
 
+(with migration = Migration.run)
 actor {
   let confessions = List.empty<Types.Confession>();
+  let comments = List.empty<Types.Comment>();
 
-  include ConfessionsMixin(confessions);
+  include ConfessionsMixin(confessions, comments);
 };

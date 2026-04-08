@@ -10,20 +10,46 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface Comment {
+  'id' : CommentId,
+  'text' : string,
+  'timestamp' : bigint,
+  'confessionId' : ConfessionId,
+}
+export type CommentId = bigint;
 export interface Confession {
   'id' : ConfessionId,
   'tags' : Array<string>,
   'text' : string,
   'isHidden' : boolean,
   'timestamp' : bigint,
+  'commentCount' : bigint,
+  'reactions' : ReactionCount,
 }
 export type ConfessionId = bigint;
+export type Reaction = { 'Sad' : null } |
+  { 'Relatable' : null } |
+  { 'Funny' : null } |
+  { 'Crazy' : null };
+export interface ReactionCount {
+  'sad' : bigint,
+  'funny' : bigint,
+  'crazy' : bigint,
+  'relatable' : bigint,
+}
+export interface TagAnalytic { 'tag' : string, 'count' : bigint }
 export interface _SERVICE {
+  'addComment' : ActorMethod<[bigint, string], Comment>,
+  'addReaction' : ActorMethod<[bigint, Reaction], ReactionCount>,
   'claimOwnership' : ActorMethod<[], boolean>,
   'deleteConfession' : ActorMethod<[bigint], boolean>,
+  'getAllConfessions' : ActorMethod<[], Array<Confession>>,
+  'getComments' : ActorMethod<[bigint], Array<Comment>>,
+  'getConfessionOfDay' : ActorMethod<[], [] | [Confession]>,
   'getConfessionsByTag' : ActorMethod<[string], Array<Confession>>,
-  'getOwnerConfessions' : ActorMethod<[], Array<Confession>>,
   'getPublicConfessions' : ActorMethod<[], Array<Confession>>,
+  'getTagAnalytics' : ActorMethod<[], Array<TagAnalytic>>,
+  'getTrendingConfessions' : ActorMethod<[], Array<Confession>>,
   'submitConfession' : ActorMethod<[string, Array<string>], bigint>,
   'toggleHideConfession' : ActorMethod<[bigint], boolean>,
 }

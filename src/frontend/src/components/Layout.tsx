@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { Link, useLocation } from "@tanstack/react-router";
-import { Landmark, LayoutDashboard, Rss } from "lucide-react";
+import { BarChart2, Landmark, LayoutDashboard, Rss } from "lucide-react";
 
 function Header() {
   const { isAuthenticated, login, logout } = useAuth();
@@ -9,6 +9,11 @@ function Header() {
 
   const navLinks = [
     { to: "/feed", label: "Discover", icon: <Rss className="w-4 h-4" /> },
+    {
+      to: "/analytics",
+      label: "Analytics",
+      icon: <BarChart2 className="w-4 h-4" />,
+    },
     {
       to: "/dashboard",
       label: "Dashboard",
@@ -27,7 +32,7 @@ function Header() {
         >
           <Landmark className="w-6 h-6 text-primary" />
           <span className="font-display text-xl font-bold text-foreground tracking-tight">
-            Cash<span className="text-primary">fessions</span>
+            gothic<span className="text-primary">garden</span>
           </span>
         </Link>
 
@@ -88,7 +93,7 @@ function Header() {
 function Footer() {
   const year = new Date().getFullYear();
   const utmLink = `https://caffeine.ai?utm_source=caffeine-footer&utm_medium=referral&utm_content=${encodeURIComponent(
-    typeof window !== "undefined" ? window.location.hostname : "cashfessions",
+    typeof window !== "undefined" ? window.location.hostname : "gothicgarden",
   )}`;
 
   return (
@@ -97,7 +102,7 @@ function Footer() {
         <div className="flex items-center gap-2">
           <Landmark className="w-4 h-4 text-primary" />
           <span className="font-display text-sm font-semibold text-foreground">
-            Cash<span className="text-primary">fessions</span>
+            gothic<span className="text-primary">garden</span>
           </span>
           <span className="text-muted-foreground text-xs">
             — Confess anonymously.

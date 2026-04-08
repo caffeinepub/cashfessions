@@ -89,25 +89,85 @@ export class ExternalBlob {
         return this;
     }
 }
-export type ConfessionId = bigint;
+export interface ReactionCount {
+    sad: bigint;
+    funny: bigint;
+    crazy: bigint;
+    relatable: bigint;
+}
+export type CommentId = bigint;
+export interface Comment {
+    id: CommentId;
+    text: string;
+    timestamp: bigint;
+    confessionId: ConfessionId;
+}
 export interface Confession {
     id: ConfessionId;
     tags: Array<string>;
     text: string;
     isHidden: boolean;
     timestamp: bigint;
+    commentCount: bigint;
+    reactions: ReactionCount;
+}
+export type ConfessionId = bigint;
+export interface TagAnalytic {
+    tag: string;
+    count: bigint;
+}
+export enum Reaction {
+    Sad = "Sad",
+    Relatable = "Relatable",
+    Funny = "Funny",
+    Crazy = "Crazy"
 }
 export interface backendInterface {
+    addComment(confessionId: bigint, text: string): Promise<Comment>;
+    addReaction(confessionId: bigint, reaction: Reaction): Promise<ReactionCount>;
     claimOwnership(): Promise<boolean>;
     deleteConfession(id: bigint): Promise<boolean>;
+    getAllConfessions(): Promise<Array<Confession>>;
+    getComments(confessionId: bigint): Promise<Array<Comment>>;
+    getConfessionOfDay(): Promise<Confession | null>;
     getConfessionsByTag(tag: string): Promise<Array<Confession>>;
-    getOwnerConfessions(): Promise<Array<Confession>>;
     getPublicConfessions(): Promise<Array<Confession>>;
+    getTagAnalytics(): Promise<Array<TagAnalytic>>;
+    getTrendingConfessions(): Promise<Array<Confession>>;
     submitConfession(text: string, tags: Array<string>): Promise<bigint>;
     toggleHideConfession(id: bigint): Promise<boolean>;
 }
+import type { Confession as _Confession, Reaction as _Reaction } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async addComment(arg0: bigint, arg1: string): Promise<Comment> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addComment(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addComment(arg0, arg1);
+            return result;
+        }
+    }
+    async addReaction(arg0: bigint, arg1: Reaction): Promise<ReactionCount> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.addReaction(arg0, to_candid_Reaction_n1(this._uploadFile, this._downloadFile, arg1));
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.addReaction(arg0, to_candid_Reaction_n1(this._uploadFile, this._downloadFile, arg1));
+            return result;
+        }
+    }
     async claimOwnership(): Promise<boolean> {
         if (this.processError) {
             try {
@@ -136,6 +196,48 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getAllConfessions(): Promise<Array<Confession>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllConfessions();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllConfessions();
+            return result;
+        }
+    }
+    async getComments(arg0: bigint): Promise<Array<Comment>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getComments(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getComments(arg0);
+            return result;
+        }
+    }
+    async getConfessionOfDay(): Promise<Confession | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getConfessionOfDay();
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getConfessionOfDay();
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getConfessionsByTag(arg0: string): Promise<Array<Confession>> {
         if (this.processError) {
             try {
@@ -150,20 +252,6 @@ export class Backend implements backendInterface {
             return result;
         }
     }
-    async getOwnerConfessions(): Promise<Array<Confession>> {
-        if (this.processError) {
-            try {
-                const result = await this.actor.getOwnerConfessions();
-                return result;
-            } catch (e) {
-                this.processError(e);
-                throw new Error("unreachable");
-            }
-        } else {
-            const result = await this.actor.getOwnerConfessions();
-            return result;
-        }
-    }
     async getPublicConfessions(): Promise<Array<Confession>> {
         if (this.processError) {
             try {
@@ -175,6 +263,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getPublicConfessions();
+            return result;
+        }
+    }
+    async getTagAnalytics(): Promise<Array<TagAnalytic>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTagAnalytics();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTagAnalytics();
+            return result;
+        }
+    }
+    async getTrendingConfessions(): Promise<Array<Confession>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTrendingConfessions();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTrendingConfessions();
             return result;
         }
     }
@@ -206,6 +322,31 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+}
+function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Confession]): Confession | null {
+    return value.length === 0 ? null : value[0];
+}
+function to_candid_Reaction_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Reaction): _Reaction {
+    return to_candid_variant_n2(_uploadFile, _downloadFile, value);
+}
+function to_candid_variant_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: Reaction): {
+    Sad: null;
+} | {
+    Relatable: null;
+} | {
+    Funny: null;
+} | {
+    Crazy: null;
+} {
+    return value == Reaction.Sad ? {
+        Sad: null
+    } : value == Reaction.Relatable ? {
+        Relatable: null
+    } : value == Reaction.Funny ? {
+        Funny: null
+    } : value == Reaction.Crazy ? {
+        Crazy: null
+    } : value;
 }
 export interface CreateActorOptions {
     agent?: Agent;

@@ -8,25 +8,53 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const CommentId = IDL.Nat;
 export const ConfessionId = IDL.Nat;
+export const Comment = IDL.Record({
+  'id' : CommentId,
+  'text' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'confessionId' : ConfessionId,
+});
+export const Reaction = IDL.Variant({
+  'Sad' : IDL.Null,
+  'Relatable' : IDL.Null,
+  'Funny' : IDL.Null,
+  'Crazy' : IDL.Null,
+});
+export const ReactionCount = IDL.Record({
+  'sad' : IDL.Nat,
+  'funny' : IDL.Nat,
+  'crazy' : IDL.Nat,
+  'relatable' : IDL.Nat,
+});
 export const Confession = IDL.Record({
   'id' : ConfessionId,
   'tags' : IDL.Vec(IDL.Text),
   'text' : IDL.Text,
   'isHidden' : IDL.Bool,
   'timestamp' : IDL.Int,
+  'commentCount' : IDL.Nat,
+  'reactions' : ReactionCount,
 });
+export const TagAnalytic = IDL.Record({ 'tag' : IDL.Text, 'count' : IDL.Nat });
 
 export const idlService = IDL.Service({
+  'addComment' : IDL.Func([IDL.Nat, IDL.Text], [Comment], []),
+  'addReaction' : IDL.Func([IDL.Nat, Reaction], [ReactionCount], []),
   'claimOwnership' : IDL.Func([], [IDL.Bool], []),
   'deleteConfession' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+  'getAllConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
+  'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
+  'getConfessionOfDay' : IDL.Func([], [IDL.Opt(Confession)], ['query']),
   'getConfessionsByTag' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(Confession)],
       ['query'],
     ),
-  'getOwnerConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
   'getPublicConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
+  'getTagAnalytics' : IDL.Func([], [IDL.Vec(TagAnalytic)], ['query']),
+  'getTrendingConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
   'submitConfession' : IDL.Func([IDL.Text, IDL.Vec(IDL.Text)], [IDL.Nat], []),
   'toggleHideConfession' : IDL.Func([IDL.Nat], [IDL.Bool], []),
 });
@@ -34,25 +62,53 @@ export const idlService = IDL.Service({
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const CommentId = IDL.Nat;
   const ConfessionId = IDL.Nat;
+  const Comment = IDL.Record({
+    'id' : CommentId,
+    'text' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'confessionId' : ConfessionId,
+  });
+  const Reaction = IDL.Variant({
+    'Sad' : IDL.Null,
+    'Relatable' : IDL.Null,
+    'Funny' : IDL.Null,
+    'Crazy' : IDL.Null,
+  });
+  const ReactionCount = IDL.Record({
+    'sad' : IDL.Nat,
+    'funny' : IDL.Nat,
+    'crazy' : IDL.Nat,
+    'relatable' : IDL.Nat,
+  });
   const Confession = IDL.Record({
     'id' : ConfessionId,
     'tags' : IDL.Vec(IDL.Text),
     'text' : IDL.Text,
     'isHidden' : IDL.Bool,
     'timestamp' : IDL.Int,
+    'commentCount' : IDL.Nat,
+    'reactions' : ReactionCount,
   });
+  const TagAnalytic = IDL.Record({ 'tag' : IDL.Text, 'count' : IDL.Nat });
   
   return IDL.Service({
+    'addComment' : IDL.Func([IDL.Nat, IDL.Text], [Comment], []),
+    'addReaction' : IDL.Func([IDL.Nat, Reaction], [ReactionCount], []),
     'claimOwnership' : IDL.Func([], [IDL.Bool], []),
     'deleteConfession' : IDL.Func([IDL.Nat], [IDL.Bool], []),
+    'getAllConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
+    'getComments' : IDL.Func([IDL.Nat], [IDL.Vec(Comment)], ['query']),
+    'getConfessionOfDay' : IDL.Func([], [IDL.Opt(Confession)], ['query']),
     'getConfessionsByTag' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(Confession)],
         ['query'],
       ),
-    'getOwnerConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
     'getPublicConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
+    'getTagAnalytics' : IDL.Func([], [IDL.Vec(TagAnalytic)], ['query']),
+    'getTrendingConfessions' : IDL.Func([], [IDL.Vec(Confession)], ['query']),
     'submitConfession' : IDL.Func([IDL.Text, IDL.Vec(IDL.Text)], [IDL.Nat], []),
     'toggleHideConfession' : IDL.Func([IDL.Nat], [IDL.Bool], []),
   });

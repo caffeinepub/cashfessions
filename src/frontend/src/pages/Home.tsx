@@ -19,6 +19,11 @@ const TAGS = [
   { label: "Stocks", value: "stocks" },
   { label: "Real Estate", value: "real estate" },
   { label: "Forex", value: "forex" },
+  { label: "Money", value: "money" },
+  { label: "Money & Relationships", value: "money and relationships" },
+  { label: "School & Money", value: "school and money" },
+  { label: "Dark Money Secrets", value: "dark money secrets" },
+  { label: "Investing Losses", value: "investing losses" },
 ];
 
 export default function Home() {
@@ -168,7 +173,7 @@ export default function Home() {
                             type="button"
                             onClick={() => toggleTag(tag.value)}
                             aria-pressed={isSelected}
-                            data-ocid={`tag-${tag.value}`}
+                            data-ocid={`tag-${tag.value.replace(/\s+/g, "-")}`}
                             className={cn(
                               "px-4 py-1.5 rounded-full text-sm font-semibold border transition-smooth cursor-pointer",
                               isSelected
@@ -239,7 +244,7 @@ export default function Home() {
       >
         <div className="max-w-2xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-12 text-center">
           {[
-            { label: "Investor community", value: "Cashfessions" },
+            { label: "Investor community", value: "gothicgarden" },
             { label: "Zero identity stored", value: "100% Anonymous" },
             { label: "Stories shared", value: "& counting" },
           ].map((item) => (
