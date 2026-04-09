@@ -1,5 +1,6 @@
 import { createActor } from "@/backend";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useActor } from "@caffeineai/core-infrastructure";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
@@ -23,6 +24,7 @@ interface TagAnalytic {
 interface ChartDatum {
   tag: string;
   label: string;
+  shortLabel: string;
   count: number;
   isTop: boolean;
 }
@@ -39,25 +41,31 @@ const CATEGORY_LABELS: Record<string, string> = {
   "investing losses": "Inv. Losses",
 };
 
+const CATEGORY_SHORT_LABELS: Record<string, string> = {
+  crypto: "Crypto",
+  stocks: "Stocks",
+  "real estate": "R.Estate",
+  forex: "Forex",
+  money: "Money",
+  "money and relationships": "M&R",
+  "school and money": "School",
+  "dark money secrets": "Dark$",
+  "investing losses": "Losses",
+};
+
 function toLabel(tag: string): string {
   return CATEGORY_LABELS[tag.toLowerCase()] ?? tag;
 }
 
-const SKELETON_HEIGHTS = [
-  "h-24",
-  "h-40",
-  "h-32",
-  "h-56",
-  "h-20",
-  "h-36",
-  "h-28",
-  "h-48",
-  "h-16",
-];
+function toShortLabel(tag: string): string {
+  return CATEGORY_SHORT_LABELS[tag.toLowerCase()] ?? tag;
+}
+
+const SKELETON_HEIGHTS = ["h-24", "h-40", "h-32", "h-56", "h-20", "h-36"];
 
 function ChartSkeleton() {
   return (
-    <div className="flex gap-3 h-72 w-full items-end px-4">
+    <div className="flex gap-3 h-56 w-full items-end px-4">
       {SKELETON_HEIGHTS.map((h) => (
         <Skeleton key={h} className={`flex-1 rounded-t-md ${h}`} />
       ))}
@@ -93,6 +101,7 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 
 export default function Analytics() {
   const { actor, isFetching: actorLoading } = useActor(createActor);
+  const isMobile = useIsMobile(640);
 
   const { data: rawAnalytics = [], isLoading } = useQuery<TagAnalytic[]>({
     queryKey: ["tag-analytics"],
@@ -104,11 +113,11 @@ export default function Analytics() {
     refetchInterval: 60_000,
   });
 
-  // Build chart data sorted descending
   const chartData: ChartDatum[] = rawAnalytics
     .map((a) => ({
       tag: a.tag,
       label: toLabel(a.tag),
+      shortLabel: toShortLabel(a.tag),
       count: Number(a.count),
       isTop: false,
     }))
@@ -120,18 +129,19 @@ export default function Analytics() {
 
   const topCategory = chartData.find((d) => d.isTop);
   const totalConfessions = chartData.reduce((sum, d) => sum + d.count, 0);
+  const chartHeight = isMobile ? 240 : 340;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Page header */}
-      <section className="bg-card border-b border-border/60 py-10 px-4 sm:px-6 lg:px-8">
+      <section className="bg-card border-b border-border/60 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
           >
-            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground tracking-tight">
+            <h1 className="font-display text-2xl sm:text-4xl font-semibold text-foreground tracking-tight">
               Category Analytics
             </h1>
             <p className="mt-1.5 text-muted-foreground text-sm sm:text-base">
@@ -143,8 +153,8 @@ export default function Analytics() {
       </section>
 
       {/* Stats strip */}
-      <section className="bg-muted/30 border-b border-border/40 px-4 sm:px-6 lg:px-8 py-6">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <section className="bg-muted/30 border-b border-border/40 px-4 sm:px-6 lg:px-8 py-5 sm:py-6">
+        <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -170,7 +180,7 @@ export default function Analytics() {
             className="card-elevated p-4 flex flex-col gap-1"
           >
             <span className="text-muted-foreground text-xs uppercase tracking-wider font-semibold">
-              Categories Tracked
+              Categories
             </span>
             <span className="font-display text-3xl font-bold text-foreground">
               {isLoading || actorLoading ? (
@@ -204,17 +214,17 @@ export default function Analytics() {
       </section>
 
       {/* Bar chart */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.25 }}
-          className="card-elevated p-6"
+          className="card-elevated p-4 sm:p-6"
           data-ocid="analytics-chart"
         >
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-start sm:items-center justify-between mb-5 gap-2 flex-wrap">
             <div>
-              <h2 className="font-display text-xl font-semibold text-foreground">
+              <h2 className="font-display text-lg sm:text-xl font-semibold text-foreground">
                 Confessions by Category
               </h2>
               <p className="text-muted-foreground text-xs mt-0.5">
@@ -234,7 +244,7 @@ export default function Analytics() {
             <ChartSkeleton />
           ) : chartData.length === 0 ? (
             <div
-              className="flex flex-col items-center justify-center py-20 gap-3 text-center"
+              className="flex flex-col items-center justify-center py-16 gap-3 text-center"
               data-ocid="analytics-empty"
             >
               <div className="text-4xl select-none">📊</div>
@@ -247,10 +257,15 @@ export default function Analytics() {
               </p>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={340}>
+            <ResponsiveContainer width="100%" height={chartHeight}>
               <BarChart
                 data={chartData}
-                margin={{ top: 28, right: 8, left: -12, bottom: 40 }}
+                margin={{
+                  top: 24,
+                  right: 8,
+                  left: isMobile ? -20 : -12,
+                  bottom: isMobile ? 20 : 40,
+                }}
                 barCategoryGap="28%"
               >
                 <CartesianGrid
@@ -259,23 +274,23 @@ export default function Analytics() {
                   vertical={false}
                 />
                 <XAxis
-                  dataKey="label"
+                  dataKey={isMobile ? "shortLabel" : "label"}
                   tick={{
                     fill: "oklch(var(--muted-foreground))",
-                    fontSize: 10,
+                    fontSize: isMobile ? 9 : 10,
                     fontFamily: "var(--font-body)",
                   }}
                   axisLine={false}
                   tickLine={false}
-                  angle={-35}
-                  textAnchor="end"
+                  angle={isMobile ? 0 : -35}
+                  textAnchor={isMobile ? "middle" : "end"}
                   interval={0}
                 />
                 <YAxis
                   allowDecimals={false}
                   tick={{
                     fill: "oklch(var(--muted-foreground))",
-                    fontSize: 11,
+                    fontSize: isMobile ? 9 : 11,
                     fontFamily: "var(--font-body)",
                   }}
                   axisLine={false}
@@ -286,16 +301,18 @@ export default function Analytics() {
                   cursor={{ fill: "oklch(var(--muted) / 0.4)", radius: 4 }}
                 />
                 <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                  <LabelList
-                    dataKey="count"
-                    position="top"
-                    style={{
-                      fill: "oklch(var(--muted-foreground))",
-                      fontSize: 11,
-                      fontFamily: "var(--font-body)",
-                      fontWeight: 600,
-                    }}
-                  />
+                  {!isMobile && (
+                    <LabelList
+                      dataKey="count"
+                      position="top"
+                      style={{
+                        fill: "oklch(var(--muted-foreground))",
+                        fontSize: 11,
+                        fontFamily: "var(--font-body)",
+                        fontWeight: 600,
+                      }}
+                    />
+                  )}
                   {chartData.map((entry) => (
                     <Cell
                       key={entry.tag}
@@ -318,7 +335,7 @@ export default function Analytics() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.4 }}
-            className="mt-6 card-elevated divide-y divide-border/60"
+            className="mt-5 sm:mt-6 card-elevated divide-y divide-border/60"
             data-ocid="analytics-breakdown"
           >
             {chartData.map((d, index) => {
@@ -329,14 +346,14 @@ export default function Analytics() {
               return (
                 <div
                   key={d.tag}
-                  className="flex items-center gap-4 px-5 py-4"
+                  className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4"
                   data-ocid={`analytics-row-${d.tag.replace(/\s+/g, "-")}`}
                 >
                   <span className="text-muted-foreground text-sm w-5 text-right shrink-0">
                     {index + 1}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <span className="font-semibold text-sm text-foreground truncate">
                         {CATEGORY_LABELS[d.tag] ?? d.label}
                       </span>
@@ -362,7 +379,7 @@ export default function Analytics() {
                     <span className="text-foreground font-bold text-sm tabular-nums">
                       {d.count}
                     </span>
-                    <span className="text-muted-foreground text-xs tabular-nums w-9 text-right">
+                    <span className="text-muted-foreground text-xs tabular-nums w-8 sm:w-9 text-right">
                       {pct}%
                     </span>
                   </div>

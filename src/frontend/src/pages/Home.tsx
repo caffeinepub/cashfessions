@@ -1,6 +1,7 @@
 import { createActor } from "@/backend";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useActor } from "@caffeineai/core-infrastructure";
 import { useMutation } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ export default function Home() {
   const [text, setText] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [submitted, setSubmitted] = useState(false);
+  const isMobile = useIsMobile(640);
 
   const { mutate, isPending, isError, error } = useMutation({
     mutationFn: async ({ text, tags }: { text: string; tags: string[] }) => {
@@ -61,7 +63,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero section */}
-      <section className="relative flex flex-col items-center justify-center px-4 pt-20 pb-12 overflow-hidden">
+      <section className="relative flex flex-col items-center justify-center px-4 pt-12 sm:pt-20 pb-10 sm:pb-12 overflow-hidden">
         {/* Decorative background glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] rounded-full bg-primary/5 blur-3xl" />
@@ -75,24 +77,29 @@ export default function Home() {
           className="relative z-10 flex flex-col items-center text-center max-w-2xl w-full"
         >
           {/* Icon badge */}
-          <div className="flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-card border border-border text-muted-foreground text-sm">
+          <div className="flex items-center gap-2 mb-5 px-4 py-2 rounded-full bg-card border border-border text-muted-foreground text-sm">
             <Lock className="w-3.5 h-3.5 text-accent" />
             <span>Fully anonymous — no identity stored</span>
           </div>
 
           {/* Headline */}
-          <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-4">
+          <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-4">
             What's your biggest{" "}
             <span className="text-primary">investment mistake?</span>
           </h1>
 
-          <p className="text-muted-foreground text-lg sm:text-xl leading-relaxed mb-10">
-            Share anonymously — your identity is never stored. Help the investor
-            community learn from real stories.
+          <p className="text-muted-foreground text-base sm:text-xl leading-relaxed mb-8">
+            A safe space to confess, heal, and grow — where every bad trade
+            becomes a lesson. Anonymous. Honest. Together.
           </p>
 
           {/* Form card */}
-          <div className="w-full bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-lg">
+          <div
+            className={cn(
+              "w-full bg-card border border-border rounded-2xl shadow-lg",
+              isMobile ? "p-4" : "p-6 sm:p-8",
+            )}
+          >
             <AnimatePresence mode="wait">
               {submitted ? (
                 <motion.div
@@ -117,8 +124,9 @@ export default function Home() {
                   </div>
                   <Button
                     variant="outline"
-                    size="sm"
+                    size="lg"
                     onClick={() => setSubmitted(false)}
+                    className="min-h-[48px] min-w-[160px]"
                     data-ocid="submit-another-btn"
                   >
                     Share another
@@ -147,8 +155,9 @@ export default function Home() {
                       placeholder="I put my life savings into meme coins because a Twitter influencer said it would 100x..."
                       value={text}
                       onChange={(e) => setText(e.target.value)}
-                      rows={5}
-                      className="resize-none bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-smooth rounded-xl text-base leading-relaxed"
+                      rows={isMobile ? 4 : 5}
+                      className="resize-none bg-background border-border text-foreground placeholder:text-muted-foreground focus:border-primary/50 focus:ring-primary/20 transition-smooth rounded-xl leading-relaxed"
+                      style={{ fontSize: "16px" }}
                       data-ocid="confession-textarea"
                     />
                   </div>
@@ -175,7 +184,7 @@ export default function Home() {
                             aria-pressed={isSelected}
                             data-ocid={`tag-${tag.value.replace(/\s+/g, "-")}`}
                             className={cn(
-                              "px-4 py-1.5 rounded-full text-sm font-semibold border transition-smooth cursor-pointer",
+                              "px-3 py-2 rounded-full text-sm font-semibold border transition-smooth cursor-pointer min-h-[44px] flex items-center",
                               isSelected
                                 ? "bg-accent/20 border-accent/60 text-accent"
                                 : "bg-background border-border text-muted-foreground hover:border-accent/40 hover:text-foreground",
@@ -212,7 +221,7 @@ export default function Home() {
                   <Button
                     onClick={handleSubmit}
                     disabled={!canSubmit}
-                    className="w-full h-12 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth rounded-xl shadow-md"
+                    className="w-full h-14 text-base font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-smooth rounded-xl shadow-md"
                     data-ocid="submit-confession-btn"
                   >
                     {isPending ? (

@@ -7,9 +7,22 @@ mixin (
   confessions : List.List<Types.Confession>,
   comments : List.List<Types.Comment>,
 ) {
-  // Seed sample confessions at init; nextConfessionId starts after the samples
-  var nextConfessionId : Nat = ConfessionsLib.seedSamples(confessions, 0);
-  var nextCommentId : Nat = 0;
+  // On fresh install: seed samples and derive nextConfessionId from seeded data.
+  // On upgrade: EOP restores the persisted value; the initializer is NOT re-run.
+  var nextConfessionId : Nat = do {
+    let afterSeed = ConfessionsLib.seedSamples(confessions, 0);
+    if (afterSeed > 0) {
+      afterSeed
+    } else {
+      // Derive from existing data in case this is an upgrade with no prior counter
+      confessions.foldLeft(0, func(acc : Nat, c : Types.Confession) : Nat {
+        if (c.id + 1 > acc) c.id + 1 else acc
+      })
+    }
+  };
+  var nextCommentId : Nat = comments.foldLeft(0, func(acc : Nat, c : Types.Comment) : Nat {
+    if (c.id + 1 > acc) c.id + 1 else acc
+  });
   var owner : ?Principal = null;
 
   // Public: submit an anonymous confession (no caller stored)

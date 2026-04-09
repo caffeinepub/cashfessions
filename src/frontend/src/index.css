@@ -128,10 +128,32 @@
   }
 
   .tag-badge {
-    @apply inline-block px-3 py-1 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/30;
+    @apply inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-accent/10 text-accent border border-accent/30;
   }
 
   .confession-header {
     @apply sticky top-0 z-40 bg-card border-b border-border;
+  }
+
+  /* Prevent iOS auto-zoom on all text inputs globally */
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  /* Minimum touch target sizing */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Hide scrollbar but keep scrollable */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

@@ -10,8 +10,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, LayoutDashboard, Lock, LogOut } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// ─── Filter tabs ─────────────────────────────────────────────────────────────
-
 type FilterTab = "all" | "active" | "hidden";
 
 const TABS: { key: FilterTab; label: string }[] = [
@@ -19,8 +17,6 @@ const TABS: { key: FilterTab; label: string }[] = [
   { key: "active", label: "Active" },
   { key: "hidden", label: "Hidden" },
 ];
-
-// ─── Delete confirmation ──────────────────────────────────────────────────────
 
 interface ConfirmDeleteProps {
   open: boolean;
@@ -47,13 +43,13 @@ function ConfirmDelete({ open, onConfirm, onCancel }: ConfirmDeleteProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-background/80 backdrop-blur-sm"
       aria-modal="true"
     >
       <div
         ref={ref}
         tabIndex={-1}
-        className="card-elevated max-w-sm w-full mx-4 p-6 flex flex-col gap-4 outline-none"
+        className="card-elevated w-full sm:max-w-sm mx-0 sm:mx-4 p-6 flex flex-col gap-4 outline-none rounded-t-2xl sm:rounded-lg"
         data-ocid="confirm-delete-dialog"
       >
         <div className="flex items-start gap-3">
@@ -67,19 +63,21 @@ function ConfirmDelete({ open, onConfirm, onCancel }: ConfirmDeleteProps) {
             </p>
           </div>
         </div>
-        <div className="flex gap-2 justify-end">
+        <div className="flex gap-3 justify-end">
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={onCancel}
+            className="flex-1 sm:flex-none min-h-[48px]"
             data-ocid="confirm-cancel"
           >
             Cancel
           </Button>
           <Button
             variant="destructive"
-            size="sm"
+            size="lg"
             onClick={onConfirm}
+            className="flex-1 sm:flex-none min-h-[48px]"
             data-ocid="confirm-delete"
           >
             Delete
@@ -90,13 +88,11 @@ function ConfirmDelete({ open, onConfirm, onCancel }: ConfirmDeleteProps) {
   );
 }
 
-// ─── Skeletons ────────────────────────────────────────────────────────────────
-
-const SKELETON_KEYS = ["a", "b", "c", "d", "e", "f", "g", "h"];
+const SKELETON_KEYS = ["a", "b", "c", "d"];
 
 function DashboardSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {SKELETON_KEYS.map((k) => (
         <Skeleton key={k} className="h-52 w-full rounded-lg" />
       ))}
@@ -104,30 +100,32 @@ function DashboardSkeleton() {
   );
 }
 
-// ─── Login wall ───────────────────────────────────────────────────────────────
-
 function LoginWall({ onLogin }: { onLogin: () => void }) {
   return (
     <div
-      className="flex flex-col items-center justify-center gap-6 py-24 text-center"
+      className="flex flex-col items-center justify-center gap-6 py-16 px-4 text-center"
       data-ocid="login-wall"
     >
       <div className="w-16 h-16 rounded-2xl bg-card border border-border flex items-center justify-center">
         <Lock className="w-7 h-7 text-primary" />
       </div>
       <div className="space-y-2 max-w-sm">
-        <h1 className="font-display text-3xl text-foreground">
+        <h1 className="font-display text-2xl sm:text-3xl text-foreground">
           Owner Dashboard
         </h1>
         <p className="text-muted-foreground text-sm leading-relaxed">
           Sign in with Internet Identity to manage your confessions, moderate
           submissions, and view your complete feed.
         </p>
+        <p className="text-muted-foreground text-xs mt-2">
+          On mobile, your browser will open the Internet Identity login page.
+          Make sure pop-ups are not blocked.
+        </p>
       </div>
       <Button
         size="lg"
         onClick={onLogin}
-        className="gap-2"
+        className="gap-2 min-h-[52px] w-full max-w-xs text-base font-semibold"
         data-ocid="login-btn"
       >
         Login with Internet Identity
@@ -135,8 +133,6 @@ function LoginWall({ onLogin }: { onLogin: () => void }) {
     </div>
   );
 }
-
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function Dashboard() {
   const { isAuthenticated, isLoading: authLoading, login, logout } = useAuth();
@@ -147,18 +143,14 @@ export default function Dashboard() {
   const [deletingId, setDeletingId] = useState<bigint | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<bigint | null>(null);
 
-  // ── Claim ownership after first login ──────────────────────────────────────
   const hasClaimed = useRef(false);
   useEffect(() => {
     if (isAuthenticated && actor && !actorFetching && !hasClaimed.current) {
       hasClaimed.current = true;
-      actor.claimOwnership().catch(() => {
-        // benign — may already be owner
-      });
+      actor.claimOwnership().catch(() => {});
     }
   }, [isAuthenticated, actor, actorFetching]);
 
-  // ── Fetch owner confessions ────────────────────────────────────────────────
   const {
     data: confessions,
     isLoading: confessionsLoading,
@@ -174,7 +166,6 @@ export default function Dashboard() {
     staleTime: 15_000,
   });
 
-  // ── Delete mutation ────────────────────────────────────────────────────────
   const deleteMutation = useMutation({
     mutationFn: async (id: bigint) => {
       if (!actor) throw new Error("No actor");
@@ -201,7 +192,6 @@ export default function Dashboard() {
     },
   });
 
-  // ── Toggle hide mutation ───────────────────────────────────────────────────
   const toggleHideMutation = useMutation({
     mutationFn: async (id: bigint) => {
       if (!actor) throw new Error("No actor");
@@ -229,7 +219,6 @@ export default function Dashboard() {
     },
   });
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
   const handleDeleteRequest = useCallback((id: bigint) => {
     setPendingDeleteId(id);
   }, []);
@@ -252,7 +241,6 @@ export default function Dashboard() {
     [toggleHideMutation],
   );
 
-  // ── Auth loading ───────────────────────────────────────────────────────────
   if (authLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -261,7 +249,6 @@ export default function Dashboard() {
     );
   }
 
-  // ── Not authenticated ──────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -270,7 +257,6 @@ export default function Dashboard() {
     );
   }
 
-  // ── Filter confessions ─────────────────────────────────────────────────────
   const allConfessions = confessions ?? [];
   const filtered =
     activeTab === "all"
@@ -290,9 +276,9 @@ export default function Dashboard() {
         onCancel={handleDeleteCancel}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-        {/* ── Page header ─────────────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-5 sm:space-y-6">
+        {/* Page header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
           <div className="flex items-center gap-3">
             <LayoutDashboard className="w-5 h-5 text-primary shrink-0" />
             <div>
@@ -312,9 +298,9 @@ export default function Dashboard() {
           </div>
           <Button
             variant="outline"
-            size="sm"
+            size="lg"
             onClick={logout}
-            className="gap-2 self-start sm:self-auto"
+            className="gap-2 self-start sm:self-auto min-h-[48px]"
             data-ocid="logout-btn"
           >
             <LogOut className="w-4 h-4" />
@@ -322,9 +308,9 @@ export default function Dashboard() {
           </Button>
         </div>
 
-        {/* ── Filter tabs ─────────────────────────────────────────────────── */}
+        {/* Filter tabs */}
         <div
-          className="flex gap-1 bg-muted/50 p-1 rounded-lg w-fit"
+          className="flex gap-1 bg-muted/50 p-1 rounded-lg w-full sm:w-fit overflow-x-auto scrollbar-hide"
           aria-label="Filter confessions"
           data-ocid="filter-tabs"
         >
@@ -341,7 +327,7 @@ export default function Dashboard() {
                 type="button"
                 aria-pressed={activeTab === key}
                 onClick={() => setActiveTab(key)}
-                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-medium transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                className={`flex items-center gap-1.5 px-4 py-2.5 rounded-md text-sm font-medium transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring flex-1 sm:flex-none justify-center min-h-[44px] ${
                   activeTab === key
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -360,7 +346,7 @@ export default function Dashboard() {
           })}
         </div>
 
-        {/* ── Content ─────────────────────────────────────────────────────── */}
+        {/* Content */}
         {confessionsLoading ? (
           <DashboardSkeleton />
         ) : isError ? (
@@ -389,7 +375,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <ul
-            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
             aria-label="Confessions"
             data-ocid="confessions-grid"
           >

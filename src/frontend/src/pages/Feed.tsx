@@ -9,7 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Flame, Star } from "lucide-react";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const ALL_TAGS: { label: string; value: TagFilter }[] = [
   { label: "All", value: null },
@@ -65,7 +65,13 @@ function EmptyState() {
           community.
         </p>
       </div>
-      <Button asChild variant="default" data-ocid="feed-empty-cta">
+      <Button
+        asChild
+        variant="default"
+        size="lg"
+        className="min-h-[48px]"
+        data-ocid="feed-empty-cta"
+      >
         <Link to="/">Share your confession</Link>
       </Button>
     </motion.div>
@@ -119,6 +125,28 @@ function TrendingBadge() {
 export default function Feed() {
   const [activeTag, setActiveTag] = useState<TagFilter>(null);
   const { actor, isFetching: actorLoading } = useActor(createActor);
+  const highlightedConfessionId =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("confession")
+      : null;
+  const scrolledRef = useRef(false);
+
+  // Scroll to and highlight the linked confession once data loads
+  useEffect(() => {
+    if (!highlightedConfessionId || scrolledRef.current) return;
+    const el = document.querySelector(
+      `[data-confession-id="${highlightedConfessionId}"]`,
+    );
+    if (!el) return;
+    scrolledRef.current = true;
+    setTimeout(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("ring-2", "ring-primary/50", "ring-offset-2");
+      setTimeout(() => {
+        el.classList.remove("ring-2", "ring-primary/50", "ring-offset-2");
+      }, 3000);
+    }, 400);
+  });
 
   const { data: confessions = [], isLoading } = useQuery<Confession[]>({
     queryKey: ["public-confessions", activeTag],
@@ -136,7 +164,6 @@ export default function Feed() {
     queryFn: async () => {
       if (!actor) return null;
       const result = await actor.getConfessionOfDay();
-      // backend returns [] | [Confession] (Motoko optional)
       if (Array.isArray(result) && result.length > 0)
         return result[0] as Confession;
       return null;
@@ -157,7 +184,6 @@ export default function Feed() {
 
   const visibleConfessions = confessions.filter((c) => !c.isHidden);
 
-  // IDs to exclude from main feed (already shown in COTD / trending sections)
   const highlightedIds = new Set<string>();
   if (confessionOfDay) highlightedIds.add(String(confessionOfDay.id));
   for (const c of trendingConfessions.slice(0, 5)) {
@@ -173,14 +199,14 @@ export default function Feed() {
   return (
     <div className="min-h-screen bg-background">
       {/* Page header band */}
-      <section className="bg-card border-b border-border/60 py-10 px-4 sm:px-6 lg:px-8">
+      <section className="bg-card border-b border-border/60 py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: -12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45 }}
           >
-            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-foreground tracking-tight">
+            <h1 className="font-display text-2xl sm:text-4xl font-semibold text-foreground tracking-tight">
               Confession Feed
             </h1>
             <p className="mt-1.5 text-muted-foreground text-sm sm:text-base">
@@ -189,41 +215,52 @@ export default function Feed() {
             </p>
           </motion.div>
 
-          {/* Scrollable tag filter bar */}
-          <div
-            className="mt-6 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 overflow-x-auto scrollbar-hide"
-            aria-label="Filter by tag"
-            data-ocid="feed-filter-bar"
-          >
-            <fieldset className="flex gap-2 border-none p-0 m-0 pb-1 w-max min-w-full">
-              {ALL_TAGS.map(({ label, value }) => {
-                const isActive = activeTag === value;
-                return (
-                  <button
-                    type="button"
-                    key={label}
-                    onClick={() => setActiveTag(value)}
-                    aria-pressed={isActive}
-                    className={[
-                      "px-4 py-1.5 rounded-full text-xs font-semibold border whitespace-nowrap transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      isActive
-                        ? "bg-accent text-accent-foreground border-accent shadow-md"
-                        : "bg-transparent text-muted-foreground border-border hover:border-accent/50 hover:text-accent",
-                    ].join(" ")}
-                    data-ocid={`filter-${label.toLowerCase().replace(/\s+/g, "-")}`}
-                  >
-                    {value ? (
-                      <span>
-                        <span className="opacity-60">#</span>
-                        {label}
-                      </span>
-                    ) : (
-                      label
-                    )}
-                  </button>
-                );
-              })}
-            </fieldset>
+          {/* Scrollable tag filter bar with right fade affordance */}
+          <div className="relative mt-5">
+            {/* Right fade gradient to signal scrollability */}
+            <div
+              className="absolute right-0 top-0 bottom-0 w-10 pointer-events-none z-10"
+              style={{
+                background:
+                  "linear-gradient(to right, transparent, oklch(var(--card)))",
+              }}
+              aria-hidden="true"
+            />
+            <div
+              className="overflow-x-auto scrollbar-hide -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8"
+              aria-label="Filter by tag"
+              data-ocid="feed-filter-bar"
+            >
+              <fieldset className="flex gap-2 border-none p-0 m-0 pb-1 w-max min-w-full">
+                {ALL_TAGS.map(({ label, value }) => {
+                  const isActive = activeTag === value;
+                  return (
+                    <button
+                      type="button"
+                      key={label}
+                      onClick={() => setActiveTag(value)}
+                      aria-pressed={isActive}
+                      className={[
+                        "px-4 py-2.5 rounded-full text-sm font-semibold border whitespace-nowrap transition-smooth focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[44px]",
+                        isActive
+                          ? "bg-accent text-accent-foreground border-accent shadow-md"
+                          : "bg-transparent text-muted-foreground border-border hover:border-accent/50 hover:text-accent",
+                      ].join(" ")}
+                      data-ocid={`filter-${label.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      {value ? (
+                        <span>
+                          <span className="opacity-60">#</span>
+                          {label}
+                        </span>
+                      ) : (
+                        label
+                      )}
+                    </button>
+                  );
+                })}
+              </fieldset>
+            </div>
           </div>
 
           {activeTag && !isPageLoading && (
@@ -238,7 +275,7 @@ export default function Feed() {
       </section>
 
       {/* Feed content */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8 sm:space-y-10">
         {isPageLoading ? (
           <FeedSkeleton />
         ) : visibleConfessions.length === 0 &&
@@ -265,7 +302,10 @@ export default function Feed() {
                     Confession of the Day
                   </h2>
                 </div>
-                <div className="ring-2 ring-primary/30 rounded-lg">
+                <div
+                  className="ring-2 ring-primary/30 rounded-lg"
+                  data-confession-id={String(confessionOfDay.id)}
+                >
                   <ConfessionCard
                     confession={confessionOfDay}
                     isOwner={false}
@@ -299,6 +339,7 @@ export default function Feed() {
                       initial={{ opacity: 0, x: -16 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.35, delay: index * 0.07 }}
+                      data-confession-id={String(confession.id)}
                     >
                       <ConfessionCard
                         confession={confession}
@@ -329,6 +370,7 @@ export default function Feed() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.35, delay: index * 0.05 }}
                         data-ocid="feed-item"
+                        data-confession-id={String(confession.id)}
                       >
                         <ConfessionCard
                           confession={confession}

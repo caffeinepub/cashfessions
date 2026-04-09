@@ -1,4 +1,4 @@
-// Version: 3.0.0
+// Version: 1.0.0
 type CommentId__190841476 = Nat;
 type Comment__944784714 =
   {
@@ -18,32 +18,11 @@ type Confession__780683053 =
     text : Text;
     timestamp : Int
   };
-type List__415060402<T> = List__790383201<T>;
-type List__790383201<T> =
-  {
-    var blockIndex : Nat__490723111;
-    var blocks : [var [var ?T]];
-    var elementIndex : Nat__490723111
-  };
 type Nat__490723111 = Nat__920180692;
 type Nat__920180692 = Nat;
-type OldConfessionId__444851147 = Nat;
-type OldConfession__150102188 =
-  {
-    id : OldConfessionId__444851147;
-    isHidden : Bool;
-    tags : [Text];
-    text : Text;
-    timestamp : Int
-  };
 type ReactionCount__526567739 =
   {crazy : Nat; funny : Nat; relatable : Nat; sad : Nat};
-actor ({
-  in confessions : List__415060402<OldConfession__150102188>;
-  stable var nextCommentId : Nat;
-  stable var nextConfessionId : Nat;
-  stable var owner : ?Principal
-}, {
+actor {
   stable comments :
     {
       var blockIndex : Nat__490723111;
@@ -59,4 +38,4 @@ actor ({
   stable var nextCommentId : Nat;
   stable var nextConfessionId : Nat;
   stable var owner : ?Principal
-}) ;
+};
